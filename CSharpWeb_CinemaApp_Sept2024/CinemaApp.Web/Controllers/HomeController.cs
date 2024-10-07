@@ -1,9 +1,11 @@
-using CinemaApp.Web.ViewModels;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace CinemaApp.Web.Controllers
 {
+    using System.Diagnostics;
+
+    using Microsoft.AspNetCore.Mvc;
+
+    using ViewModels;
     public class HomeController : Controller
     {
        
