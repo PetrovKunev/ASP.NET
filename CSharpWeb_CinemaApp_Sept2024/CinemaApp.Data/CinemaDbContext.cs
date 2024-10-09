@@ -2,6 +2,7 @@
 {
     using Models;
     using Microsoft.EntityFrameworkCore;
+    using System.Reflection;
 
     public class CinemaDbContext: DbContext
     {
@@ -16,5 +17,10 @@
         }
 
         public virtual DbSet<Movie> Movies { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        }
     }
 }

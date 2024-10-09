@@ -1,5 +1,4 @@
-﻿
-namespace CinemaApp.Data.Configuration
+﻿namespace CinemaApp.Data.Configuration
 {
     using Models;
     using Microsoft.EntityFrameworkCore;
@@ -13,8 +12,21 @@ namespace CinemaApp.Data.Configuration
                 .HasKey(m => m.Id);
 
             builder.Property(m => m.Title)
-                .HasMaxLength(TitleMaxLength)
-                .IsRequired();
+                   .HasMaxLength(TitleMaxLength)
+                   .IsRequired();
+
+            builder.Property(m => m.Genre)
+                   .HasMaxLength(GenreMaxLength)
+                   .IsRequired();
+
+
+            builder.Property(m => m.Director)
+                   .HasMaxLength(DirectorMaxLength)
+                   .IsRequired();
+
+            builder.Property(m => m.Description)
+                   .HasMaxLength(DescriptionMaxLength)
+                   .IsRequired();
         }
     }
 }
