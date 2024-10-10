@@ -1,7 +1,9 @@
 ﻿using CinemaApp.Data;
 using CinemaApp.Data.Models;
+using CinemaApp.Web.ViewModels.Movie;
 using Microsoft.AspNetCore.Mvc;
-using System.Data.SqlTypes;
+using System.Globalization;
+
 
 namespace CinemaApp.Web.Controllers
 {
@@ -28,12 +30,32 @@ namespace CinemaApp.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Movie movie)
+        public IActionResult Create(AddMovieInputModel inputModel)
         {
-            /*if (!ModelState.IsValid)
+           
+
+            bool isReleaseDateValid = DateTime.TryParseExact(inputModel.ReleaseDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime releaseDate);
+
+            if (!isReleaseDateValid)
             {
-                return View(movie);
-            }*/
+                this.ModelState.AddModelError(nameof(inputModel.ReleaseDate), "Invalid release date.");
+                return this.View(inputModel);
+            }
+
+            if (!this.ModelState.IsValid)
+            {
+                return View(inputModel);
+            }
+
+            Movie movie = new Movie
+            {
+                Title = inputModel.Title,
+                Genre = inputModel.Genre,
+                ReleaseDate = releaseDate,
+                Director = inputModel.Director,
+                Duration = inputModel.Duration,
+                Description = inputModel.Description
+            };
 
             this.dbContext.Movies.Add(movie);
             this.dbContext.SaveChanges();
