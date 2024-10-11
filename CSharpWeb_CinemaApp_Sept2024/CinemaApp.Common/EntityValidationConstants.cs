@@ -13,6 +13,7 @@
             public const int DescriptionMaxLength = 500;
             public const int DurationMinValue = 1;
             public const int DurationMaxValue = 999;
+            public const string ReleaseDateFormat = "MM/yyyy";
         }
     }
 }
