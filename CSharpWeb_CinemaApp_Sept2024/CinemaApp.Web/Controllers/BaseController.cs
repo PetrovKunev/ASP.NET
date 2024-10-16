@@ -1,6 +1,8 @@
-﻿namespace CinemaApp.Web.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace CinemaApp.Web.Controllers
 {
-    public class Class
+    public class BaseController : Controller
     {
     }
 }
