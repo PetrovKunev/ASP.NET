@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static GameZone.Common.ValidationConstants;
 
 namespace GameZone.Data
 {
@@ -12,11 +13,11 @@ namespace GameZone.Data
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(GameTitleMaxLength)]
         [Comment("The title of the game.")]
         public string Title { get; set; } = null!;
         [Required]
-        [MaxLength(500)]
+        [MaxLength(GameDescriptionMaxLength)]
         [Comment("The description of the game.")]
         public string Description { get; set; } = null!;
 
