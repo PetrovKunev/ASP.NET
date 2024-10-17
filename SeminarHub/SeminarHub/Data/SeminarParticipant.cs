@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace SeminarHub.Data
 {
+    [PrimaryKey(nameof(SeminarId), nameof(ParticipantId))]
     public class SeminarParticipant
     {
         [Required]
