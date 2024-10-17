@@ -12,23 +12,23 @@ namespace SeminarHub.Data
         [Required]
         [MinLength(3)]
         [MaxLength(100)]
-        public string Topic { get; set; }
+        public string Topic { get; set; } = null!;
 
         [Required]
         [MinLength(5)]
         [MaxLength(60)]
-        public string Lecturer { get; set; }
+        public string Lecturer { get; set; } = null!;
 
         [Required]
         [MinLength(10)]
         [MaxLength(500)]
-        public string Details { get; set; }
+        public string Details { get; set; } = null!;
 
         [Required]
-        public string OrganizerId { get; set; }
+        public string OrganizerId { get; set; } = null!;
 
         [ForeignKey(nameof(OrganizerId))]
-        public virtual IdentityUser Organizer { get; set; }
+        public virtual IdentityUser Organizer { get; set; } = null!;
 
         [Required]
         public DateTime DateAndTime { get; set; }
@@ -40,7 +40,7 @@ namespace SeminarHub.Data
         public int CategoryId { get; set; }
 
         [ForeignKey(nameof(CategoryId))]
-        public virtual Category Category { get; set; }
+        public virtual Category Category { get; set; } = null!;
 
         public virtual ICollection<SeminarParticipant> SeminarParticipants { get; set; } = new HashSet<SeminarParticipant>();
 

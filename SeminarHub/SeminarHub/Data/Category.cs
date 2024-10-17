@@ -10,7 +10,7 @@ namespace SeminarHub.Data
         [Required]
         [MinLength(3)]
         [MaxLength(50)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public virtual ICollection<Seminar> Seminars { get; set; } = new HashSet<Seminar>();
     }
