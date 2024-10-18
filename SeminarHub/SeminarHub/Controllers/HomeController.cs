@@ -15,6 +15,13 @@ namespace SeminarHub.Controllers
 
         public IActionResult Index()
         {
+            // Проверка дали потребителят е логнат
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                // Пренасочване към /Seminar/All, ако потребителят е логнат
+                return RedirectToAction("All", "Seminar");
+            }
+
             return View();
         }
 
