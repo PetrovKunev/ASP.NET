@@ -130,30 +130,6 @@ namespace SeminarHub.Controllers
             return RedirectToAction("All");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Join(int id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-            // Проверка дали потребителят вече е присъединен към семинара
-            var existingSubscription = await _context.SeminarParticipants
-                .FirstOrDefaultAsync(sp => sp.SeminarId == id && sp.ParticipantId == userId);
-
-            if (existingSubscription == null)
-            {
-                var seminarParticipant = new SeminarParticipant
-                {
-                    SeminarId = id,
-                    ParticipantId = userId
-                };
-
-                _context.SeminarParticipants.Add(seminarParticipant);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToAction("All");
-        }
-
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -181,28 +157,151 @@ namespace SeminarHub.Controllers
             return View(viewModel);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Join(int id)
+        {
+            var seminar = await _context.Seminars
+                .Include(s => s.SeminarParticipants)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (seminar == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // Проверка дали семинарът вече е в колекцията на потребителя
+            bool isAlreadyJoined = seminar.SeminarParticipants
+                .Any(sp => sp.ParticipantId == userId);
+
+            if (isAlreadyJoined)
+            {
+                // Ако семинарът вече е добавен, пренасочване към /Seminar/All
+                return RedirectToAction(nameof(All));
+            }
+
+            // Добавяне на потребителя към участниците в семинара
+            seminar.SeminarParticipants.Add(new SeminarParticipant
+            {
+                SeminarId = seminar.Id,
+                ParticipantId = userId
+            });
+
+            await _context.SaveChangesAsync();
+
+            // Пренасочване към /Seminar/Joined след успешното добавяне
+            return RedirectToAction(nameof(Joined));
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> Joined()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            // Взимаме семинарите, към които потребителят се е присъединил
-            var joinedSeminars = await _context.SeminarParticipants
-                .Where(sp => sp.ParticipantId == userId)
-                .Select(sp => new SeminarViewModel
+            var seminars = await _context.Seminars
+                .Where(s => s.SeminarParticipants.Any(sp => sp.ParticipantId == userId))
+                .Select(s => new SeminarViewModel
                 {
-                    Id = sp.Seminar.Id,
-                    Topic = sp.Seminar.Topic,
-                    Lecturer = sp.Seminar.Lecturer,
-                    DateAndTime = sp.Seminar.DateAndTime,
-                    Organizer = sp.Seminar.Organizer.UserName
+                    Id = s.Id,
+                    Topic = s.Topic,
+                    Lecturer = s.Lecturer,
+                    Category = s.Category.Name,
+                    DateAndTime = s.DateAndTime,
+                    Organizer = s.Organizer.UserName ?? string.Empty
                 })
                 .ToListAsync();
 
-            return View(joinedSeminars);
+            return View(seminars);
         }
 
+        // POST: Seminar/Leave?id={id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Leave(int id)
+        {
+            var seminar = await _context.Seminars
+                .Include(s => s.SeminarParticipants)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (seminar == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // Намери участника в семинара и го премахни
+            var seminarParticipant = seminar.SeminarParticipants
+                .FirstOrDefault(sp => sp.ParticipantId == userId);
+
+            if (seminarParticipant != null)
+            {
+                seminar.SeminarParticipants.Remove(seminarParticipant);
+                await _context.SaveChangesAsync();
+            }
+
+            // Пренасочване обратно към страницата Seminar/Joined
+            return RedirectToAction(nameof(Joined));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var seminar = await _context.Seminars
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (seminar == null)
+            {
+                return BadRequest();
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // Проверка дали текущият потребител е създател на семинара
+            if (seminar.OrganizerId != userId)
+            {
+                return Unauthorized();
+            }
+
+            // Подготвяме модел за изтриване, който да се покаже на изгледа
+            var model = new SeminarDeleteViewModel
+            {
+                Id = seminar.Id,
+                Topic = seminar.Topic
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var seminar = await _context.Seminars
+                .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted); // Намираме само активни семинари
+
+            if (seminar == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // Проверка дали потребителят е създателят на семинара
+            if (seminar.OrganizerId != userId)
+            {
+                return Unauthorized();
+            }
+
+            // Вместо да изтриваме физически, маркираме като изтрит
+            seminar.IsDeleted = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(All));
+        }
 
     }
 }
